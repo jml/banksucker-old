@@ -1,4 +1,16 @@
 
+## TODO
+
+* Transform Lloyds to spending plan format
+* Transform AMEX to spending plan format
+* Create new spending plan
+* Append new spending plan data to existing format
+* Automatic download of Lloyds statements
+* Automatic download of AMEX statements
+* Filtering of duplicates
+* Automatic category assignment
+
+
 ## Lloyds transform
 
 1. Delete top row (headers)

@@ -11,9 +11,11 @@
             "name": "testr",
             "cmd": ["testr", "run"],
             "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
-            "working_dir": "${project_path}"
+            "working_dir": "${project_path}",
+            "env": {"PYTHONPATH": "$PYTHONPATH:~/Desktop/gdata-2.0.7/src"}
         },
 		{
+			// XXX: We seriously need a Makefile for this
 			"name": "Trial",
 			"cmd": ["trial", "banksucker"],
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",

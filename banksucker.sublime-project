@@ -11,8 +11,7 @@
             "name": "testr",
             "cmd": ["testr", "run"],
             "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
-            "working_dir": "${project_path}",
-            "env": {"PYTHONPATH": "$PYTHONPATH:/home/jml/src/treq:/home/jml/src/Twisted/trunk"}
+            "working_dir": "${project_path}"
         },
 		{
 			"name": "Trial",

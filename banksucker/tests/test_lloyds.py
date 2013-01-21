@@ -3,7 +3,7 @@ from StringIO import StringIO
 
 from testtools import TestCase
 
-from ..lloyds import parse_row, parse_csv
+from .. import lloyds
 
 
 class TestConversion(TestCase):
@@ -13,7 +13,7 @@ class TestConversion(TestCase):
             "15/01/2013", "DEB", "30-98-71", "28726568",
             "WWW.ST-DEINIOLS.CO CD 2422", 99.00, None, 4595.66,
             ]
-        data = parse_row(row)
+        data = lloyds.parse_row(row)
         self.assertEqual({'date': date(2013, 1, 15),
                           'type': 'DEB',
                           'description': "WWW.ST-DEINIOLS.CO CD 2422",
@@ -23,7 +23,7 @@ class TestConversion(TestCase):
         stream = StringIO("""\
 15/01/2013,DEB,'30-98-71,28726568,WWW.ST-DEINIOLS.CO CD 2422 ,99.00,,4595.66
 14/01/2013,DEB,'30-98-71,28726568,CAFFE NERO CD 8921 ,3.10,,4694.66""")
-        data = parse_csv(stream)
+        data = lloyds.parse_csv(stream)
         self.assertEqual(
             [{'date': date(2013, 1, 15),
               'type': 'DEB',

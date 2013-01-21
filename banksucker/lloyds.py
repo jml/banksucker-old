@@ -13,5 +13,6 @@ def _parse_row(row):
 
 def parse_csv(csv_stream):
     reader = csv.reader(csv_stream)
+    reader.next()
     for row in reader:
         yield _parse_row(row)

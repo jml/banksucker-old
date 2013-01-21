@@ -3,11 +3,15 @@ from datetime import datetime
 
 
 def _parse_row(row):
+    if row[5] is not None:
+        amount = row[5]
+    else:
+        amount = -row[6]
     return {
         'date': datetime.strptime(row[0], '%d/%m/%Y').date(),
         'type': row[1],
         'description': row[4].strip(),
-        'amount': float(row[5]),
+        'amount': float(amount),
         }
 
 

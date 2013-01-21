@@ -8,7 +8,7 @@ from .. import lloyds
 
 class TestConversion(TestCase):
 
-    def test_convert(self):
+    def test_debit_row(self):
         row = [
             "15/01/2013", "DEB", "30-98-71", "28726568",
             "WWW.ST-DEINIOLS.CO CD 2422", 99.00, None, 4595.66,
@@ -18,6 +18,17 @@ class TestConversion(TestCase):
                           'type': 'DEB',
                           'description': "WWW.ST-DEINIOLS.CO CD 2422",
                           'amount': 99.0}, data)
+
+    def test_credit_row(self):
+        row = [
+            "15/01/2013", "DEB", "30-98-71", "28726568",
+            "WWW.ST-DEINIOLS.CO CD 2422", None, 42.30, 4595.66,
+            ]
+        data = lloyds._parse_row(row)
+        self.assertEqual({'date': date(2013, 1, 15),
+                          'type': 'DEB',
+                          'description': "WWW.ST-DEINIOLS.CO CD 2422",
+                          'amount': -42.3}, data)
 
     def test_parse_file(self):
         stream = StringIO("""\

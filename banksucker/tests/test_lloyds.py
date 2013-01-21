@@ -17,7 +17,7 @@ class TestConversion(TestCase):
         self.assertEqual({'date': date(2013, 1, 15),
                           'type': 'DEB',
                           'description': "WWW.ST-DEINIOLS.CO CD 2422",
-                          'amount': 99.0}, data)
+                          'amount': -99.0}, data)
 
     def test_credit_row(self):
         row = [
@@ -28,7 +28,7 @@ class TestConversion(TestCase):
         self.assertEqual({'date': date(2013, 1, 15),
                           'type': 'DEB',
                           'description': "WWW.ST-DEINIOLS.CO CD 2422",
-                          'amount': -42.3}, data)
+                          'amount': 42.3}, data)
 
     def test_parse_file(self):
         stream = StringIO("""\
@@ -40,8 +40,8 @@ Transaction Date,Transaction Type,Sort Code,Account Number,Transaction Descripti
             [{'date': date(2013, 1, 15),
               'type': 'DEB',
               'description': "WWW.ST-DEINIOLS.CO CD 2422",
-              'amount': 99.0},
+              'amount': -99.0},
              {'date': date(2013, 1, 14),
               'type': 'DEB',
               'description': "CAFFE NERO CD 8921",
-              'amount': 3.1}], list(data))
+              'amount': -3.1}], list(data))

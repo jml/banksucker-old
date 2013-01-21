@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 
 
-def parse_row(row):
+def _parse_row(row):
     return {
         'date': datetime.strptime(row[0], '%d/%m/%Y').date(),
         'type': row[1],
@@ -16,4 +16,4 @@ def parse_row(row):
 def parse_csv(csv_stream):
     reader = csv.reader(csv_stream)
     for row in reader:
-        yield parse_row(row)
+        yield _parse_row(row)

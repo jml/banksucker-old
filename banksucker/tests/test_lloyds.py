@@ -13,7 +13,7 @@ class TestConversion(TestCase):
             "15/01/2013", "DEB", "30-98-71", "28726568",
             "WWW.ST-DEINIOLS.CO CD 2422", 99.00, None, 4595.66,
             ]
-        data = lloyds.parse_row(row)
+        data = lloyds._parse_row(row)
         self.assertEqual({'date': date(2013, 1, 15),
                           'type': 'DEB',
                           'description': "WWW.ST-DEINIOLS.CO CD 2422",

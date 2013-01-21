@@ -7,9 +7,18 @@
 	],
 	"build_systems":
 	[
+	    {
+            "name": "testr",
+            "cmd": ["testr", "run"],
+            "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+            "working_dir": "${project_path}",
+            "env": {"PYTHONPATH": "$PYTHONPATH:/home/jml/src/treq:/home/jml/src/Twisted/trunk"}
+        },
 		{
 			"name": "Trial",
-			"cmd": ["trial", "banksucker"]
+			"cmd": ["trial", "banksucker"],
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"working_dir": "${project_path}"
 		}
 	]
 }

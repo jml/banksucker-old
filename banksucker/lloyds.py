@@ -1,10 +1,7 @@
 from __future__ import print_function
 
-import sys
-
 from bs4 import BeautifulSoup
 import treq
-from twisted.internet.task import react
 
 
 LOGIN_FORM_URL = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
@@ -36,7 +33,7 @@ def post_done(response):
 
 
 def parse_form(soup):
-    print(soup.form.find_all('input'))
+    return soup.form.find_all('input')
 
 
 def main(reactor, *args):
@@ -44,6 +41,3 @@ def main(reactor, *args):
     return chain(
         d, post_done, BeautifulSoup,
         parse_form)
-
-
-react(main, sys.argv)

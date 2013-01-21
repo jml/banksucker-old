@@ -20,13 +20,13 @@ form = """
 </div>
 <div class="formField fieldHelp checkbox clearfix">
 <div class="formFieldInner"><input id="frmLogin:loginRemember" type="checkbox" name="frmLogin:loginRemember" checked=""> <label for="frmLogin:loginRemember">Remember my User ID</label>
-<span class="cxtHelp"> <a class="cxtTrigger" title="Click to find out more about remembering your user ID." href="https://online.lloydstsb.co.uk/personal/logon/login.jsp#cxtHelp1">[?]</a>
+<span class="cxtHelp"> <a class="cxtTrigger" title="Click to find out more about remembering your user ID." href="https://online.lloydstsb.co.uk/personal/logon/login.jsp#cxtHelp1">[?]</a>
 </span>
 <div id="cxtHelp1" class="help"><h3>Remember my user ID</h3>
-<p>Tick this box to save your user ID on this computer. This won’t save your password though. You’ll still have to enter it each time you want to access your account.</p></div>
+<p>Tick this box to save your user ID on this computer. This won't save your password though. You'll still have to enter it each time you want to access your account.</p></div>
 </div>
 </div>
-<div class="inner"><p><strong>Warning:</strong> Don’t tick this box if you’re using a public or shared computer</p></div>
+<div class="inner"><p><strong>Warning:</strong> Don't tick this box if you're using a public or shared computer</p></div>
 <div class="loginActions clearfix"><input id="frmLogin:btnLogin1" name="frmLogin:btnLogin1" type="image" class="submitAction" src="./login-form_files/continue-10-1329498072.png" alt="Continue" title="Continue"> 
 <ul id="frmLogin:pnlLogin2" class="linkList">
 	<li><a id="frmLogin:lkLogin2" name="frmLogin:lkLogin2" href="https://online.lloydstsb.co.uk/personal/a/submitreplaceunlockauthmechanism/customeridentificationdata.jsp" title="Forgotten your password?">Forgotten your password?</a></li>
@@ -45,4 +45,4 @@ form = """
 class TestLoginForm(TestCase):
 
     def test_whatever(self):
-        print(parse_form(BeautifulSoup(form)))
+        parse_form(BeautifulSoup(form))

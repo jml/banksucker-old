@@ -11,9 +11,6 @@ LOGIN_FORM_URL = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
 LOGIN_URL = 'https://online.lloydstsb.co.uk/personal/primarylogin'
 
 
-
-
-
 user_id_field = "frmLogin:strCustomerLogin_userID"
 password_field = "frmLogin:strCustomerLogin_pwd"
 
@@ -22,7 +19,7 @@ remember_field = "frmLogin:loginRemember"
 
 hidden_data = {
     'frmLogin': 'frmLogin',
-    'submitToken': '', # Need to get this from login page
+    'submitToken': '',  # Need to get this from login page
     'target': None,
     'hdn_mobile': None,
     }

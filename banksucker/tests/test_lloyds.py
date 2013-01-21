@@ -41,6 +41,7 @@ form = """
 <input type="hidden" name="hasJS" value="true"></form>
 """
 
+
 class TestLoginForm(TestCase):
 
     def test_whatever(self):

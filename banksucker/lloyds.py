@@ -1,5 +1,4 @@
-import csv
-from datetime import datetime
+from .parser import map_csv, parse_date
 
 
 def _parse_row(row):
@@ -8,7 +7,7 @@ def _parse_row(row):
     else:
         amount = float(row[6])
     return {
-        'date': datetime.strptime(row[0], '%d/%m/%Y').date(),
+        'date': parse_date(row[0]),
         'type': row[1],
         'description': row[4].strip(),
         'amount': amount,
@@ -16,7 +15,4 @@ def _parse_row(row):
 
 
 def parse_csv(csv_stream):
-    reader = csv.reader(csv_stream)
-    reader.next()
-    for row in reader:
-        yield _parse_row(row)
+    return map_csv(_parse_row, csv_stream, skip_header=True)

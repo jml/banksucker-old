@@ -1,17 +1,14 @@
-import csv
-from datetime import datetime
+from .parser import map_csv, parse_date
 
 
 def _parse_row(row):
     return {
         'type': 'AMEX',
-        'date': datetime.strptime(row[0], '%d/%m/%Y').date(),
+        'date': parse_date(row[0]),
         'description': row[3],
         'amount': -float(row[2]),
     }
 
 
 def parse_csv(csv_stream):
-    reader = csv.reader(csv_stream)
-    for row in reader:
-        yield _parse_row(row)
+    return map_csv(_parse_row, csv_stream, skip_header=False)

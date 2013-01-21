@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
+
+from datetime import date
 from testtools import TestCase
 
-from ..lloyds import parse_form
+from ..lloyds import parse_form, parse_row
 
 
 form = """
@@ -27,15 +29,15 @@ form = """
 </div>
 </div>
 <div class="inner"><p><strong>Warning:</strong> Don't tick this box if you're using a public or shared computer</p></div>
-<div class="loginActions clearfix"><input id="frmLogin:btnLogin1" name="frmLogin:btnLogin1" type="image" class="submitAction" src="./login-form_files/continue-10-1329498072.png" alt="Continue" title="Continue"> 
+<div class="loginActions clearfix"><input id="frmLogin:btnLogin1" name="frmLogin:btnLogin1" type="image" class="submitAction" src="./login-form_files/continue-10-1329498072.png" alt="Continue" title="Continue">
 <ul id="frmLogin:pnlLogin2" class="linkList">
-	<li><a id="frmLogin:lkLogin2" name="frmLogin:lkLogin2" href="https://online.lloydstsb.co.uk/personal/a/submitreplaceunlockauthmechanism/customeridentificationdata.jsp" title="Forgotten your password?">Forgotten your password?</a></li>
-	<li><a id="frmLogin:lkLogin1" name="frmLogin:lkLogin1" href="https://online.lloydstsb.co.uk/personal/a/submitforgottenuserid/forgotUserID.jsp" title="Forgotten your User ID?">Forgotten your User ID?</a></li>
-	<li><a id="frmLogin:lkLoginTrouble" name="frmLogin:lkLoginTrouble" href="https://online.lloydstsb.co.uk/personal/a/submitreplaceunlockauthmechanism/customeridentificationdata.jsp" title="Having problems logging in?">Having problems logging in?</a></li>
+<li><a id="frmLogin:lkLogin2" name="frmLogin:lkLogin2" href="https://online.lloydstsb.co.uk/personal/a/submitreplaceunlockauthmechanism/customeridentificationdata.jsp" title="Forgotten your password?">Forgotten your password?</a></li>
+<li><a id="frmLogin:lkLogin1" name="frmLogin:lkLogin1" href="https://online.lloydstsb.co.uk/personal/a/submitforgottenuserid/forgotUserID.jsp" title="Forgotten your User ID?">Forgotten your User ID?</a></li>
+<li><a id="frmLogin:lkLoginTrouble" name="frmLogin:lkLoginTrouble" href="https://online.lloydstsb.co.uk/personal/a/submitreplaceunlockauthmechanism/customeridentificationdata.jsp" title="Having problems logging in?">Having problems logging in?</a></li>
 </ul>
 </div>
 </fieldset>
-<input type="hidden" name="frmLogin" value="frmLogin"> <input type="hidden" name="submitToken" value="3839736"> <input type="hidden" name="target" value="">    <input type="hidden" name="hdn_mobile" value="">  
+<input type="hidden" name="frmLogin" value="frmLogin"> <input type="hidden" name="submitToken" value="3839736"> <input type="hidden" name="target" value="">    <input type="hidden" name="hdn_mobile" value="">
 </div>
 </div>
 <input type="hidden" name="hasJS" value="true"></form>
@@ -46,3 +48,17 @@ class TestLoginForm(TestCase):
 
     def test_whatever(self):
         parse_form(BeautifulSoup(form))
+
+
+class TestConversion(TestCase):
+
+    def test_convert(self):
+        row = [
+            "15/01/2013", "DEB", "30-98-71", "28726568",
+            "WWW.ST-DEINIOLS.CO CD 2422", 99.00, None, 4595.66,
+            ]
+        data = parse_row(row)
+        self.assertEqual({'date': date(2013, 1, 15),
+                          'type': 'DEB',
+                          'description': "WWW.ST-DEINIOLS.CO CD 2422",
+                          'amount': 99.0}, data)

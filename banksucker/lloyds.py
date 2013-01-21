@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+from datetime import datetime
+
 from bs4 import BeautifulSoup
 import treq
 
@@ -34,6 +36,15 @@ def post_done(response):
 
 def parse_form(soup):
     return soup.form.find_all('input')
+
+
+def parse_row(row):
+    return {
+        'date': datetime.strptime(row[0], '%d/%m/%Y').date(),
+        'type': row[1],
+        'description': row[4],
+        'amount': float(row[5]),
+        }
 
 
 def main(reactor, *args):

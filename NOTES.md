@@ -44,3 +44,15 @@
 7. Copy "Combined" and "Valid Category" helpers down to all new rows
 8. Delete any entries that are purchases from big spends or special expenses
 9. Fill in the field
+
+
+## Close off spending plan
+
+
+
+## New spending plan
+
+1. Copy existing spending plan to YYYY-MM Spending Plan
+2. Clear data from expenses (Col A:G, Row 2:END)
+3. Enter "Money to spend"
+   * jml's salary + Joliette's salary + interest

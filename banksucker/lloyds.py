@@ -149,8 +149,6 @@ def export_statement_data(session, account, start_date, end_date):
     form['action'] = urlparse.urljoin(url, form['action'])
     t = submit_form(session, form, allow_redirects=True)
     print t.content
-    #t = _submit_export_form(session, form, start_date, end_date)
-    #print t.content
 
 
 def _fill_export_form(form, start_date, end_date):

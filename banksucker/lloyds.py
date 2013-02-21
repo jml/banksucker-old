@@ -36,13 +36,13 @@ def fetch_login(username, password, memorable_info):
     session = requests.Session()
     session.headers['pragma'] = 'no-cache'
     session.headers['cache-control'] = 'max-age=0'
-    r = session.get(LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
-    form = _get_login_form(parse_response(r), username, password)
+    response = session.get(LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
+    form = _get_login_form(parse_response(response), username, password)
     # POST /
     form['action'] = urlparse.urljoin(LOGIN_PAGE, form['action'])
-    t = submit_form(session, form)
+    response = submit_form(session, form, allow_redirects=False)
     # GET https://secure2.lloydstsb.co.uk/personal/login?mobile=false 302
-    t = session.get(t.headers['location'], allow_redirects=False)
+    response = session.get(response.headers['location'], allow_redirects=False)
     # GET https://secure2.lloydstsb.co.uk/personal/a/logon/entermemorableinformation.jsp
 
     # XXX: The response from the previous GET sets this cookie to empty,
@@ -51,14 +51,13 @@ def fetch_login(username, password, memorable_info):
     # handle that, then we could change the POST above to allow redirects and
     # skip much of this crap.
     del session.cookies['redirect']
-    location = t.headers['location']
-    t = session.get(location, allow_redirects=False)
-    form = _get_memorable_info(parse_response(t), memorable_info)
+    location = response.headers['location']
+    response = session.get(location, allow_redirects=False)
+    form = _get_memorable_info(parse_response(response), memorable_info)
     form['action'] = urlparse.urljoin(location, form['action'])
-    t = submit_form(session, form, allow_redirects=True)
     # XXX: At this stage, the requests session has the critical IBSESSION
     # cookie from Lloyds.  We're logged in!
-    return session, t
+    return submit_form(session, form, allow_redirects=True)
 
 
 _mem_info_re = re.compile('Character (\d+)')

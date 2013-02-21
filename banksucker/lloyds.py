@@ -6,18 +6,8 @@ import lxml.html
 from StringIO import StringIO
 
 from .parser import map_csv, parse_date
+from .utils import by_name
 from .web import submit_form
-
-
-def select(xs, key, value):
-    for x in xs:
-        if x[key] == value:
-            return x
-    return None
-
-
-def by_name(xs, value):
-    return select(xs, 'name', value)
 
 
 def get_login_form(dom, username, password):
@@ -224,7 +214,6 @@ def parse_csv(csv_stream):
     return map_csv(_parse_row, csv_stream, skip_header=True)
 
 
-
+# XXX: Stop being a script.
 if __name__ == '__main__':
     main()
-

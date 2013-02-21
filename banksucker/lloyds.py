@@ -10,7 +10,7 @@ from .utils import by_name
 from .web import submit_form
 
 
-def get_login_form(dom, username, password):
+def _get_login_form(dom, username, password):
     doc = dom.getroot()
     [form] = doc.forms
     data = {}
@@ -37,7 +37,7 @@ def fetch_login(username, password, memorable_info):
     session.headers['pragma'] = 'no-cache'
     session.headers['cache-control'] = 'max-age=0'
     r = session.get(LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
-    form = get_login_form(parse_response(r), username, password)
+    form = _get_login_form(parse_response(r), username, password)
     # POST /
     form['action'] = urlparse.urljoin(LOGIN_PAGE, form['action'])
     t = submit_form(session, form)
@@ -53,7 +53,7 @@ def fetch_login(username, password, memorable_info):
     del session.cookies['redirect']
     location = t.headers['location']
     t = session.get(location, allow_redirects=False)
-    form = get_memorable_info(parse_response(t), memorable_info)
+    form = _get_memorable_info(parse_response(t), memorable_info)
     form['action'] = urlparse.urljoin(location, form['action'])
     t = submit_form(session, form, allow_redirects=True)
     # XXX: At this stage, the requests session has the critical IBSESSION
@@ -62,14 +62,14 @@ def fetch_login(username, password, memorable_info):
 
 
 _mem_info_re = re.compile('Character (\d+)')
-def memorable_info_input(field, mem_info):
+def _memorable_info_input(field, mem_info):
     text = field.label.text
     match = _mem_info_re.search(text)
     index = int(match.group(1))
     return '&nbsp;%s' % (mem_info[index - 1],)
 
 
-def get_memorable_info(dom, mem_info):
+def _get_memorable_info(dom, mem_info):
     doc = dom.getroot()
     [form] = doc.forms
     data = {}
@@ -78,7 +78,7 @@ def get_memorable_info(dom, mem_info):
             data[element.name + '.x'] = 0
             data[element.name + '.y'] = 0
         elif element.label is not None:
-            data[element.name] = memorable_info_input(element, mem_info)
+            data[element.name] = _memorable_info_input(element, mem_info)
         else:
             data[element.name] = element.value
     return {

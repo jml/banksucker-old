@@ -30,15 +30,16 @@ def get_login_form(dom, username, password):
         }
 
 
+LOGIN_PAGE = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
+
 def fetch_login(username, password, memorable_info):
-    base_page = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
     session = requests.Session()
     session.headers['pragma'] = 'no-cache'
     session.headers['cache-control'] = 'max-age=0'
-    r = session.get(base_page, params={'WT.ac': 'hpIBlogon'})
+    r = session.get(LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
     form = get_login_form(parse_response(r), username, password)
     # POST /
-    form['action'] = urlparse.urljoin(base_page, form['action'])
+    form['action'] = urlparse.urljoin(LOGIN_PAGE, form['action'])
     t = submit_form(session, form)
     # GET https://secure2.lloydstsb.co.uk/personal/login?mobile=false 302
     t = session.get(t.headers['location'], allow_redirects=False)

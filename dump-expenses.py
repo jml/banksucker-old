@@ -8,6 +8,10 @@ from sqlalchemy import (
     )
 from sqlalchemy.sql import select, and_, func
 
+# XXX: Parametrize gnucash file location with argparse
+
+# XXX: Maybe make a webserver?
+
 # XXX: Parametrize dates on the command-line with argparse
 
 # XXX: Store spending plan as data somehow.

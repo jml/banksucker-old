@@ -1,0 +1,49 @@
+#!/usr/bin/python
+
+import argparse
+from itertools import islice
+from datetime import date, datetime
+
+from banksucker import lloyds
+
+
+def iso_date(date_string):
+    return datetime.strptime(date_string, '%Y-%m-%d').date()
+
+
+def parse_credentials(creds_file):
+    username, password, mem_info = [
+        line.strip() for line in islice(creds_file, 3)]
+    return {
+        'username': username,
+        'password': password,
+        'memorable-info': mem_info,
+        }
+
+
+def make_parser():
+    p = argparse.ArgumentParser()
+    p.add_argument('--from', dest='start_date', type=iso_date)
+    p.add_argument('--to', dest='end_date', type=iso_date)
+    p.add_argument(
+        '--credentials', dest='creds_file', type=argparse.FileType('r'),
+        required=True)
+    return p
+
+
+def main():
+    args = make_parser().parse_args()
+    creds = parse_credentials(args.creds_file)
+    lloyds_home = lloyds.Lloyds.log_in(
+        creds['username'], creds['password'], creds['memorable-info'])
+    # XXX: Date range should be an input
+    today = date.today()
+    month_start = date(today.year, today.month, 1)
+    output = lloyds.export_statement_data(
+        lloyds_home['token'],
+        lloyds_home['accounts']['Classic Vantage'], month_start, today)
+    print output
+
+
+if __name__ == '__main__':
+    main()

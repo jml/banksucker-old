@@ -4,3 +4,5 @@ banksucker.sublime-workspace
 data/
 _trial_temp
 .env/
++*
+*.egg-info

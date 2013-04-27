@@ -1,13 +1,9 @@
 import re
-from datetime import date
 import urlparse
 import requests
-import lxml.html
-from StringIO import StringIO
 
 from .parser import map_csv, parse_date
-from .utils import by_name
-from .web import submit_form
+from .web import submit_form, parse_response
 
 
 def _get_login_form(dom, username, password):
@@ -30,38 +26,95 @@ def _get_login_form(dom, username, password):
         }
 
 
-LOGIN_PAGE = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
+# XXX: No decent errors:
+# - wrong user/pass
+# - wrong mem info
 
-def fetch_login(username, password, memorable_info):
+
+class Lloyds(object):
+
+    LOGIN_PAGE = 'https://online.lloydstsb.co.uk/personal/logon/login.jsp'
+
+    def __init__(self, token, accounts, url):
+        self.token = token
+        self.accounts = accounts
+        self.url = url
+
+    @classmethod
+    def log_in(cls, username, password, memorable_info):
+        response = cls._log_in(username, password, memorable_info)
+        accounts = get_accounts(parse_response(response), response.url)
+        return {
+            'token': response.cookies['IBSESSION'],
+            'accounts': accounts,
+            'url': response.url,
+            }
+
+    @classmethod
+    def _log_in(cls, username, password, memorable_info):
+        session = requests.Session()
+        session.headers['pragma'] = 'no-cache'
+        session.headers['cache-control'] = 'max-age=0'
+        response = session.get(cls.LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
+        form = _get_login_form(parse_response(response), username, password)
+        # POST /
+        form['action'] = urlparse.urljoin(cls.LOGIN_PAGE, form['action'])
+        response = submit_form(session, form, allow_redirects=False)
+        # GET https://secure2.lloydstsb.co.uk/personal/login?mobile=false 302
+        response = session.get(response.headers['location'], allow_redirects=False)
+        # GET https://secure2.lloydstsb.co.uk/personal/a/logon/entermemorableinformation.jsp
+
+        # XXX: The response from the previous GET sets this cookie to empty,
+        # which jml thinks means clearing it.  However, it looks like requests
+        # (and/or cookielib) doesn't treat it as such.  If we could get it to
+        # handle that, then we could change the POST above to allow redirects and
+        # skip much of this crap.
+        del session.cookies['redirect']
+        location = response.headers['location']
+        response = session.get(location, allow_redirects=False)
+        # XXX: memorable_info is always lower case.  Maybe this is not the
+        # best place to enforce that.
+        form = _get_memorable_info(
+            parse_response(response), memorable_info.lower())
+        form['action'] = urlparse.urljoin(location, form['action'])
+        # XXX: At this stage, the requests session has the critical IBSESSION
+        # cookie from Lloyds.  We're logged in!
+        return submit_form(session, form, allow_redirects=True)
+
+    def get_balances(self):
+        return dict((k, v['balance']) for k, v in self.accounts.items())
+
+
+def _make_session(ib_session):
     session = requests.Session()
-    session.headers['pragma'] = 'no-cache'
-    session.headers['cache-control'] = 'max-age=0'
-    response = session.get(LOGIN_PAGE, params={'WT.ac': 'hpIBlogon'})
-    form = _get_login_form(parse_response(response), username, password)
-    # POST /
-    form['action'] = urlparse.urljoin(LOGIN_PAGE, form['action'])
-    response = submit_form(session, form, allow_redirects=False)
-    # GET https://secure2.lloydstsb.co.uk/personal/login?mobile=false 302
-    response = session.get(response.headers['location'], allow_redirects=False)
-    # GET https://secure2.lloydstsb.co.uk/personal/a/logon/entermemorableinformation.jsp
+    session.cookies['IBSESSION'] = ib_session
+    return session
 
-    # XXX: The response from the previous GET sets this cookie to empty,
-    # which jml thinks means clearing it.  However, it looks like requests
-    # (and/or cookielib) doesn't treat it as such.  If we could get it to
-    # handle that, then we could change the POST above to allow redirects and
-    # skip much of this crap.
-    del session.cookies['redirect']
-    location = response.headers['location']
-    response = session.get(location, allow_redirects=False)
-    form = _get_memorable_info(parse_response(response), memorable_info)
-    form['action'] = urlparse.urljoin(location, form['action'])
-    # XXX: At this stage, the requests session has the critical IBSESSION
-    # cookie from Lloyds.  We're logged in!
-    return submit_form(session, form, allow_redirects=True)
+
+def export_statement_data(ib_session, account, start_date, end_date):
+    """Get the statement data for a Lloyds account.
+
+    :param ib_session: The thing returned by `log_in`.
+    :param account: Something identifying the account.
+    :param start_date: The start date for the export.
+    :param end_date: The end date for the export.
+    """
+    session = _make_session(ib_session)
+    t = session.get(account['url'])
+    dom = parse_response(t)
+    url = get_export_link(dom, account)
+
+    t = session.get(url)
+    dom = parse_response(t)
+    form = _fill_export_form(dom.getroot().forms[0], start_date, end_date)
+    form['action'] = urlparse.urljoin(url, form['action'])
+    t = submit_form(session, form, allow_redirects=True)
+    return t.content
 
 
 _mem_info_re = re.compile('Character (\d+)')
 def _memorable_info_input(field, mem_info):
+    # XXX: Break this up into something that just returns the requested index.
     text = field.label.text
     match = _mem_info_re.search(text)
     index = int(match.group(1))
@@ -109,46 +162,22 @@ def parse_account(li):
     balance = parse_currency(balance)
     number = details.find_class('numbers')[0].text_content()
     account = {
-        'name': name,
         'balance': balance,
         'url': url,
         }
     account.update(parse_numbers(number))
-    return account
+    return name, account
 
 
 def get_accounts(dom, url):
     root = dom.getroot()
-    accounts = []
+    accounts = {}
     account_list = root.get_element_by_id('frm1:lstAccLst')
     for li in account_list:
-        account = parse_account(li)
+        name, account = parse_account(li)
         account['url'] = urlparse.urljoin(url, account['url'])
-        accounts.append(account)
+        accounts[name] = account
     return accounts
-
-
-def get_balances(accounts):
-    return dict((a['name'], a['balance']) for a in accounts)
-
-
-def export_statement_data(session, account, start_date, end_date):
-    """Get the statement data for a Lloyds account.
-
-    :param session: A logged-in session.
-    :param account: Something identifying the account.
-    :param start_date: The start date for the export.
-    :param end_date: The end date for the export.
-    """
-    t = session.get(account['url'])
-    dom = parse_response(t)
-    url = get_export_link(dom, account)
-    t = session.get(url)
-    dom = parse_response(t)
-    form = _fill_export_form(dom.getroot().forms[0], start_date, end_date)
-    form['action'] = urlparse.urljoin(url, form['action'])
-    t = submit_form(session, form, allow_redirects=True)
-    print t.content
 
 
 def _fill_export_form(form, start_date, end_date):
@@ -178,23 +207,6 @@ def get_export_link(dom, account):
         dom.getroot().find_class('export')[0].get('href'))
 
 
-def parse_response(response):
-    # XXX: There _must_ be a better way to do this.  Because the Lloyds pages
-    # have pound symbols and smart quotes, the lxml.html parser blows up.
-    content = response.text.encode('ascii', 'replace')
-    return lxml.html.parse(StringIO(content))
-
-
-def main():
-    # XXX: Credentials should be read from a file or the OS secrets storage.
-    session, response = fetch_login('username', 'password', 'memorable-info')
-    accounts = get_accounts(parse_response(response), response.url)
-    # XXX: Date range should be an input.
-    export_statement_data(
-        session, by_name(accounts, 'Classic Vantage'),
-        date(2013, 2, 1), date.today())
-
-
 def _parse_row(row):
     if row[5] is not None:
         amount = -float(row[5])
@@ -209,9 +221,5 @@ def _parse_row(row):
 
 
 def parse_csv(csv_stream):
+    # XXX: Doesn't seem to work any more with real content.  Check it out.
     return map_csv(_parse_row, csv_stream, skip_header=True)
-
-
-# XXX: Stop being a script.
-if __name__ == '__main__':
-    main()

@@ -1,5 +1,9 @@
 """Generic web scraping stuff."""
 
+import lxml.html
+from StringIO import StringIO
+
+
 def dump_headers(headers):
     lines = []
     for name, value in sorted(headers.items()):
@@ -31,3 +35,10 @@ def submit_form(session, form, allow_redirects=False):
     return session.post(
         form['action'], data=form['params'],
         allow_redirects=allow_redirects)
+
+
+def parse_response(response):
+    # XXX: There _must_ be a better way to do this.  Because the Lloyds pages
+    # have pound symbols and smart quotes, the lxml.html parser blows up.
+    content = response.text.encode('ascii', 'replace')
+    return lxml.html.parse(StringIO(content))
